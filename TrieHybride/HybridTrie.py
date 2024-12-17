@@ -394,6 +394,7 @@ def CreateWord(node, prefix="") :
         word = prefix + Racine(node)
         res += CreateWord(Inf(node), prefix)
         if (isinstance(Val(node), int)) :
+            print(word)
             res.append(word)
         res += CreateWord(Eq(node), word)
         res += CreateWord(Sup(node), prefix)
@@ -532,7 +533,7 @@ def ChercherNoeudPrefixe(A, prefixe="") :
             return ChercherNoeudPrefixe(Sup(A), prefixe)
         else :
             nouveauPrefixe = reste(prefixe)
-            return ChercherNoeudPrefixe(Eq(A), nouveauPrefixe) if nouveauPrefixe != "" else A
+            return ChercherNoeudPrefixe(Eq(A), nouveauPrefixe) if nouveauPrefixe != "" else Eq(A)
 
 
 
