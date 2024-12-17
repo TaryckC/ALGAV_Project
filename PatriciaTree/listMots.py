@@ -1,5 +1,5 @@
 import json
-from patricia import PatriciaTrie
+from .patricia import PatriciaTrie
 import time 
 def list_Mots(filename):
     

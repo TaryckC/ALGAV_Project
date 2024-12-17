@@ -1,4 +1,4 @@
-from patricia import PatriciaTrie
+from .patricia import PatriciaTrie
 import time  # Importer le module time
 
 def delete_words(file_name):

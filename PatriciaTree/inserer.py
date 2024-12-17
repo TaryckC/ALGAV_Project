@@ -1,6 +1,6 @@
 import os
 import time  # Importer le module time
-from patricia import PatriciaTrie
+from .patricia import PatriciaTrie
 
 def insert_words(source):
     """

@@ -1,4 +1,4 @@
-from patricia import PatriciaTrie
+from .patricia import PatriciaTrie
 
 def fusion_trie(pat_1,pat_2):
     trie1=PatriciaTrie()

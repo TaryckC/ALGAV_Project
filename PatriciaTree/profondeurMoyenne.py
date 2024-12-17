@@ -1,4 +1,4 @@
-from patricia import PatriciaTrie
+from .patricia import PatriciaTrie
 
 import time 
 
