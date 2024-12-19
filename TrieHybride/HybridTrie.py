@@ -24,7 +24,7 @@ class HybridTrie :
         Prend en entrée : Un caractère, Un entier (si le mot est terminé).
 
         Le noeud crée 3 enfants : Un pour les valeurs plus petites, Un pour les valeurs égales, Un pour les valeurs plus grandes,
-        ces Noeuds sont par défaut égaux à None.
+        ces Noeuds sont par défaut égaux à None (trie vide).
         """
 
         self.value = value
@@ -50,6 +50,8 @@ class HybridTrie :
     
 # Fin classe
 
+# Compteurs pour les mesures experimentales :
+
 compteurInsertion = 0
 compteurList = 0
 compteurPrefixe = 0
@@ -57,21 +59,26 @@ compteurProfMoyenne = 0
 compteurSuppression = 0
 
 
+####################################
+######################################################################## 
+####################################
+
 # Primitives sur les clés des tries :
+
 def prem(cle) :
-    """ S−> str Renvoie le premier caractere de la cle. """
+    """ String −> str Renvoie le premier caractere de la cle. """
     if len(cle) < 1:
         return ""
     return cle[0]
 
 def reste(cle):
-    """ Renvoie la clé privée de son premier caractère. """
+    """ String -> Renvoie la clé privée de son premier caractère. """
     if len(cle) <= 1:
         return ""
     return cle[1:]
 
 def car(cle, i):
-    """ S * entier -> str Renvoie le i-ème caractère de la cle. """
+    """ String * entier -> str Renvoie le i-ème caractère de la cle. """
     if len(cle) < 1 or i >= len(cle):
         return ""
     return cle[i]
@@ -95,30 +102,33 @@ def Val(A):
     return A.position
 
 def ValVide() :
+    """ Retourne la valeur vide d'un noeud """
     return None
 
 def Eq(A) :
-    """ Trie hybride > Trie hybride Renvoie une copie du sous arbre égale centrale de A """
+    """ Trie hybride > Trie hybride Renvoie le sous arbre centrale de A """
     if A.childEq is None :
         return TH_Vide()
     return A.childEq
 
 def Sup(A) :
-    """ Trie hybride > Trie hybride Renvoie une copie du sous arbre égale supérieur de A """
+    """ Trie hybride > Trie hybride Renvoie le sous arbre supérieur de A """
     if A.childSup is None :
         return TH_Vide()
     return A.childSup
 
 def Inf(A) :
-    """ Trie hybride > Trie hybride Renvoie une copie du sous arbre égale inférieur de A """
+    """ Trie hybride > Trie hybride Renvoie le sous arbre inférieur de A """
     if A.childInf is None :
         return TH_Vide()
     return A.childInf
 
 def Racine(A) :
+    """ Trie Hybride -> Racine stocké dans le noeud A """
     return A.value
 
 def SousArbre(A, i) :
+    """ Trie Hybride * entier ([0, 2]) -> Renvoie le sous arbre 0 (Inf), 1(Eq) ou 2(Sup) du noeud A """
     match i :
         case 0 :
             return Inf(A)
@@ -137,7 +147,7 @@ def EnfantsSauf (A, i):
     return res
 
 def TrieH(value, inf, eq, sup, position) :
-    """ entier* liste [TrieH ]* TrieH> TrieH Renvoie le trie construit a partir de L, en inserant A a la i−eme position . """
+    """ entier* liste [TrieH ]* TrieH> TrieH construit un nœud de Trie Hybride à partir des arguments et le renvoie. """
     trie = HybridTrie(value, position)
     trie.childInf = inf
     trie.childEq = eq
@@ -296,15 +306,20 @@ def lookup(A, c) :
     Retourne :
         Un boolean : True si le mot a été trouvé et False sinon
     """
+    global compteurSuppression
+    compteurSuppression += 1
     if c == "" :
         return False
     elif not EstVide(A) :
+        compteurSuppression += 1
         if lgueur(c) == 1 and c == Racine(A) and not (Val(A) is None) :
             return True
         else :
             p = (prem(c))
+            compteurSuppression += 1
             if p < Racine(A):
                 return lookup(Inf(A), c)
+            compteurSuppression += 1
             if p > Racine(A):
                 return lookup(Sup(A), c)
             return lookup(Eq(A), reste(c))
@@ -394,7 +409,7 @@ def CreateWord(node, prefix="") :
         word = prefix + Racine(node)
         res += CreateWord(Inf(node), prefix)
         if (isinstance(Val(node), int)) :
-            print(word)
+            #print(word)
             res.append(word)
         res += CreateWord(Eq(node), word)
         res += CreateWord(Sup(node), prefix)
@@ -416,7 +431,9 @@ def ListeMots(A) :
 
 def ComptageNil(A) :
     """
-    Compte le nombre de pointeur vers un Noeud vide (Nil)
+    Trie Hybride -> int
+
+    Compte le nombre de noeud vide dans un Trie Hybride
 
     Arguments :
         - Un trie Hybride
@@ -504,7 +521,7 @@ def ProfondeurMoyenne(A) :
         res += i
         compteur += 1
     # On prend en compte le cas où le trie est vide
-    return res/compteur if compteur != 0 else 0
+    return int(res/compteur) if compteur != 0 else 0
 
 # Prefixe :
 
@@ -569,8 +586,8 @@ def Suppression(A, mot):
         - HybridTrie: Le nouveau trie après suppression du mot.
     """
     global compteurSuppression
+    compteurSuppression += 1
     if EstVide(A) or mot == "" or not lookup(A, mot):
-        compteurSuppression += 1
         return A  # Rien à supprimer ou mot vide
 
     p = prem(mot)
@@ -581,29 +598,28 @@ def Suppression(A, mot):
     sup = Sup(A)
 
     if p < racine:
-        compteurSuppression += 5
+        compteurSuppression += 1
         new_inf = Suppression(inf, mot)
         if val is None and EstVide(new_inf) and EstVide(eq) and EstVide(sup):
             return TH_Vide()
         else:
             return TrieH(racine, new_inf, eq, sup, val)
     elif p > racine:
-        compteurSuppression += 5
+        compteurSuppression += 2
         new_sup = Suppression(sup, mot)
         if val is None and EstVide(inf) and EstVide(eq) and EstVide(new_sup):
             return TH_Vide()
         else:
             return TrieH(racine, inf, eq, new_sup, val)
     else:
+        compteurSuppression += 2
         # p == racine
         if lgueur(mot) == 1:
-            compteurSuppression += 1
             new_val = None
             new_eq = eq
         else:
             new_eq = Suppression(eq, reste(mot))
             new_val = val
-        compteurSuppression += 4
         if new_val is None and EstVide(inf) and EstVide(new_eq) and EstVide(sup):
             return TH_Vide()
         else:
@@ -612,28 +628,6 @@ def Suppression(A, mot):
 # Lancer les tests
 
 # Équilibrage 
-
-def LargeurToutNiveau(A) :
-    if (EstVide(A)) :
-        return 1
-    else :
-        return 1+max(LargeurToutNiveau(Inf(A)), LargeurToutNiveau(Sup(A)), 1 - LargeurToutNiveau(Eq(A)))
-
-def EstEquilibre(A) :
-    """ Trie Hybride -> booléen indiquant si oui (vrai) ou non (faux) le trie hybride est équilibré """
-    if EstVide(A) or (EstVide(Inf(A)) and EstVide(Sup(A))):
-        return True
-    else :
-        hauteurInf = Hauteur(Inf(A))
-        hauteurSup = Hauteur(Sup(A))
-
-        #print("Racine de l'arbre : ", Racine(A))
-        if (abs(hauteurInf - hauteurSup) > 1 ) :
-            #print("Passage false : ", Racine(A))
-            #afficheTrie(A)
-            return False
-        else :
-            return (EstEquilibre(Inf(A)) and EstEquilibre(Sup(A)) and EstEquilibre(Eq(A)))
         
 def RotationDroite(A) :
     """ Trie Hybride -> Trie hybride ayant subis ue rotation droite """
@@ -654,6 +648,7 @@ def RotationGauche(A) :
         return TrieH(Racine(NouvelRacine), nouveauFilsGauche, Eq(NouvelRacine), Sup(NouvelRacine), Val(NouvelRacine))
 
 def Equilibrage(A):
+    """ Trie Hybride -> Trie Hybride - Renvoie le trie hybride équilibré """
     if EstVide(A):
         return A
 
@@ -662,13 +657,12 @@ def Equilibrage(A):
     A.childEq = Equilibrage(A.childEq)
     A.childSup = Equilibrage(A.childSup)
 
-    # Calcul du facteur d'équilibre
+    # facteur d'équilibre
     balance = Hauteur(A.childInf) - Hauteur(A.childSup)
 
     # Déséquilibre à gauche
     if balance > 1:
-        # Sous-arbre gauche plus bas ?
-        if Hauteur(A.childInf.childSup) > Hauteur(A.childInf.childInf):
+        if (Hauteur(A.childInf.childSup) - Hauteur(A.childInf.childInf) > 1):
             # Double rotation gauche-droite
             A.childInf = RotationGauche(A.childInf)
             A = RotationDroite(A)
@@ -678,8 +672,7 @@ def Equilibrage(A):
 
     # Déséquilibre à droite
     elif balance < -1:
-        # Sous-arbre droit penché à gauche ?
-        if Hauteur(A.childSup.childInf) > Hauteur(A.childSup.childSup):
+        if (Hauteur(A.childSup.childInf) - Hauteur(A.childSup.childSup) > 1):
             # Double rotation droite-gauche
             A.childSup = RotationDroite(A.childSup)
             A = RotationGauche(A)
@@ -950,3 +943,8 @@ def prefixe_TH(filename, prefixe) :
     print("Temps de l'opération : ", end-start)
 
     print("\n \n Nombre totate de visite de noeuds : ", compteurPrefixe)
+
+#####
+
+def genererExempleDeBase() :
+    return _insert_in_TH_from_file("ExempleDeBase.txt")

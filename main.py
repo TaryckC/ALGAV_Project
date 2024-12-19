@@ -48,7 +48,7 @@ def main():
             if optional_param:
                 prefixe_mot(filename, optional_param)  # Exemple d'utilisation de l'optional_param
             else:
-                print("Erreur : L'action 'prefixe' nécessite un paramètre supplémentaire (trie à fusionner).")
+                print("Erreur : L'action 'prefixe' nécessite un paramètre supplémentaire (prefixe recherché).")
         else:
             print(f"Action non reconnue : {action}")
     elif x == 1:

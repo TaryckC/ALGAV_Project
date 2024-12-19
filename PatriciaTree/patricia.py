@@ -6,15 +6,16 @@ class PatriciaNode:
 class PatriciaTrie:
     def __init__(self):
         self.root = PatriciaNode()  # La racine de l'arbre
+        self.comparaisons = 0
     
     def insererMots(self, mot):
         current_node = self.root
-
+        
         while mot:
             for label, child in current_node.labels.items():
                 # Trouver le préfixe commun entre le label et le mot restant
                 i = self.common_prefix_length(label, mot)
-
+                self.comparaisons += i
                 if i > 0:  # Un préfixe commun a été trouvé
                     if i == len(label):  # Le label est un préfixe complet du mot
                         mot = mot[i:]  # Réduire le mot restant
@@ -45,6 +46,7 @@ class PatriciaTrie:
                 current_node.labels[mot].labels["#"] = None
                 return
 
+        
         # Si le mot est déjà fini mais a des enfants, ajouter "#"
         if "#" not in current_node.labels:
             current_node.labels["#"] = None
@@ -67,7 +69,7 @@ class PatriciaTrie:
         # Parcourir les enfants du nœud actuel
         for label, child in node.labels.items():
             i = self.common_prefix_length(label, mot)
-
+            self.comparaisons +=i
             if i > 0:  # Préfixe commun trouvé
                 if i == len(label):  # Préfixe complet, descendre dans l'enfant
                     return self.Recherche(child, mot[i:])
@@ -87,17 +89,7 @@ class PatriciaTrie:
     
 
 
-    # def prefixe(self,mot, node=None):
-        
-    #     if node  is None:
-    #         node = self.root
-    #     words = self.listeMots()
-    #     i=0
-    #     for word1 in words :
-    #         if self.common_prefix_length(mot,word1) == len(mot):
-    #             i=i+1
-
-    #     return i
+   
 
     def Prefixe(self, node, mot):
         """
@@ -111,7 +103,7 @@ class PatriciaTrie:
         # Parcourir les labels pour trouver un préfixe commun
         for label, child in node.labels.items():
             common_length = self.common_prefix_length(label, mot)
-
+            self.comparaisons+=1
             if common_length > 0:  # Un préfixe commun est trouvé
                 if common_length == len(mot):
                     # Le mot 'mot' est complètement consommé
@@ -143,7 +135,7 @@ class PatriciaTrie:
         # Parcourir les labels pour trouver un préfixe commun
         for label, child in list(current_node.labels.items()):
             prefix_length = self.common_prefix_length(label, mot)
-
+            self.comparaisons += prefix_length
             if prefix_length > 0:  # Trouver un préfixe commun
                 if prefix_length == len(label):  # Correspondance complète du label
                     # Appel récursif avec le reste du mot
@@ -162,7 +154,7 @@ class PatriciaTrie:
        
         if not node.labels:
             return 1
-
+        self.comparaisons+=1
         # Calculer la hauteur de chaque sous-arbre
         max_height = 0
         for label, child in node.labels.items():
@@ -173,34 +165,45 @@ class PatriciaTrie:
         # Retourner 1 + la hauteur maximale des enfants
         return 1 + max_height
             
-    def averageLeafDepth(self, node, depth=0):
-       
+    
 
-        # Si c'est une feuille (contient le label "#" uniquement)
-        if not node.labels or "#" in node.labels and len(node.labels) == 1:
-            return depth, 1  # Profondeur actuelle et 1 feuille trouvée
+    def averageLeafDepth(self, node=None, depth=0):
+        """
+        Calcule la profondeur moyenne des feuilles et compte correctement les clés visitées.
+        """
+        if node is None:  # Initialiser depuis la racine
+            node = self.root
+            self.comparaisons = 0  # Réinitialisation du compteur
 
-        # Initialiser la somme des profondeurs et le nombre de feuilles
+        # Compter toutes les clés dans ce nœud
+        self.comparaisons += len(node.labels)
+
+        # Si c'est une feuille (pas d'enfants ou contient uniquement "#")
+        if not node.labels or ("#" in node.labels and len(node.labels) == 1):
+            return depth, 1  # Retourner la profondeur actuelle et 1 feuille trouvée
+
+        # Somme des profondeurs et nombre de feuilles
         total_depth = 0
         total_leaves = 0
 
-        # Parcourir tous les enfants
+        # Parcourir tous les enfants, y compris "#"
         for label, child in node.labels.items():
-            if child:  # Vérifier que l'enfant n'est pas None
-                child_depth, child_leaves = self.averageLeafDepth(child, depth + 1)
-                total_depth += child_depth
-                total_leaves += child_leaves
-            elif label == "#":  # Marque une feuille
-                total_depth += depth
-                total_leaves += 1
+            if label == "#":  # Si la clé est "#", compter explicitement
+                continue  # On n'appelle pas récursivement pour "#"
+            child_depth, child_leaves = self.averageLeafDepth(child, depth + 1)
+            total_depth += child_depth
+            total_leaves += child_leaves
 
         return total_depth, total_leaves
+    
+    
+    
 
     def profondeurMoyenne(self,arbre):
-        total_depth, total_leaves = self.averageLeafDepth(arbre)
+        total_depth, total_leaves = self.averageLeafDepth()
         if total_leaves == 0:  # Éviter la division par zéro
             return 0
-        return round(total_depth / total_leaves)
+        return round( total_depth / total_leaves) 
     
 
     def comptageMots(self, node):
@@ -211,7 +214,7 @@ class PatriciaTrie:
         # Vérifier si le nœud contient le caractère "#" (fin d'un mot)
         if "#" in node.labels:
             word_count += 1
-
+        self.comparaisons+=1
         # Parcourir les enfants du nœud
         for label, child in node.labels.items():
             if child:  # Vérifier que l'enfant n'est pas None
@@ -220,24 +223,34 @@ class PatriciaTrie:
         return word_count
 
     def listeMots(self, node=None, prefix=""):
+
+
+        
         # Si le nœud est None, commencer à partir de la racine
         if node is None:
             node = self.root
         
-
+  
+    
         # Liste pour stocker les mots
         words = []
-
+        
         # Si le label "#" est présent, ajouter le mot complet à la liste
         if "#" in node.labels:
             words.append(prefix)
+            
 
         # Parcourir les enfants dans l'ordre des clés alphabétiques
         for label in sorted(node.labels.keys()):
+            self.comparaisons += 1 
             child = node.labels[label]
+            
             if label != "#":  # Ignorer le caractère de fin de mot
                 words.extend(self.listeMots(child, prefix + label))
+            
 
+            
+            
         return words
 
     
@@ -348,68 +361,64 @@ class PatriciaTrie:
         return count
     
 
+
+
     def fusion_nodes(self, node1, node2):
         """
-        Fusionne deux nœuds Patricia et retourne le nœud fusionné.
-        Les labels sont triés pour faciliter les comparaisons.
+        Fusionne deux nœuds Patricia tout en évitant la suppression incorrecte des labels.
         """
-        # Si l'un des nœuds est vide, retourner l'autre directement
+        # Si l'un des nœuds est vide, retourner l'autre
         if not node1:
             return node2
         if not node2:
             return node1
 
-        # Trier les labels des deux nœuds pour simplifier les comparaisons
-        labels1 = sorted(node1.labels.keys())
-        labels2 = sorted(node2.labels.keys())
+        for label2, child2 in list(node2.labels.items()):
+            merged = False  # Pour savoir si un préfixe commun a été traité
 
-        # Index pour parcourir les labels
-        i, j = 0, 0
+            # Comparer chaque label de node2 avec ceux de node1
+            for label1, child1 in list(node1.labels.items()):
+                common_length = self.common_prefix_length(label1, label2)
 
-        # Fusion des labels triés
-        while i < len(labels1) and j < len(labels2):
-            label1 = labels1[i]
-            label2 = labels2[j]
+                if common_length > 0:  # Préfixe commun détecté
+                    common_prefix = label1[:common_length]
+                    remainder1 = label1[common_length:]
+                    remainder2 = label2[common_length:]
 
-            common_length = self.common_prefix_length(label1, label2)
-            if common_length > 0:
-                # Préfixe commun trouvé
-                common_prefix = label1[:common_length]
-                remainder1 = label1[common_length:]
-                remainder2 = label2[common_length:]
+                    # Créer ou récupérer un nœud pour le préfixe commun
+                    if common_prefix not in node1.labels:
+                        node1.labels[common_prefix] = PatriciaNode()
+                    common_node = node1.labels[common_prefix]
 
-                # Créer un nœud pour le préfixe commun s'il n'existe pas
-                if common_prefix not in node1.labels:
-                    node1.labels[common_prefix] = PatriciaNode()
-                common_node = node1.labels[common_prefix]
+                    # Reconstruire les enfants existants pour remainder1
+                    if remainder1:
+                        if remainder1 not in common_node.labels:
+                            common_node.labels[remainder1] = child1
+                        else:
+                            self.fusion_nodes(common_node.labels[remainder1], child1)
 
-                # Ajouter les parties restantes
-                if remainder1:
-                    common_node.labels[remainder1] = node1.labels.pop(label1)
-                if remainder2:
-                    common_node.labels[remainder2] = node2.labels.pop(label2)
-                else:
-                    # Fusionner récursivement les sous-arbres
-                    self.fusion_nodes(common_node, node2.labels.pop(label2))
+                        del node1.labels[label1]  # Retirer le label initial déplacé
 
-                # Passer aux labels suivants
-                i += 1
-                j += 1
-            elif label1 < label2:
-                # Si label1 est plus petit, avancer dans node1
-                i += 1
-            else:
-                # Si label2 est plus petit, ajouter directement à node1
-                node1.labels[label2] = node2.labels.pop(label2)
-                j += 1
+                    # Ajouter les enfants pour remainder2
+                    if remainder2:
+                        if remainder2 not in common_node.labels:
+                            common_node.labels[remainder2] = child2
+                        else:
+                            self.fusion_nodes(common_node.labels[remainder2], child2)
+                    else:
+                        # Fusionner récursivement si les labels sont identiques
+                        self.fusion_nodes(common_node, child2)
 
-        # Ajouter les labels restants de node2 à node1
-        while j < len(labels2):
-            label2 = labels2[j]
-            node1.labels[label2] = node2.labels[label2]
-            j += 1
+                    merged = True
+                    break
+
+            # Si aucun préfixe commun n'a été trouvé, ajouter directement label2
+            if not merged:
+                node1.labels[label2] = child2
 
         return node1
+
+
 
     def fusion(self, other_trie):
         # Liste des mots des deux Patricia-Tries avant fusion
@@ -421,33 +430,29 @@ class PatriciaTrie:
 
         self.fusion_nodes(self.root, other_trie.root)
         # Liste des mots après la fusion
-        words_after_merge = self.listeMots()
+        
 
+
+        # for word in words_from_other:
+        #     self.insererMots(word)
+
+        words_after_merge = self.listeMots()
         # Vérification
         if set(words_after_merge) == expected_words:
             print("Fusion réussie : tous les mots sont présents.")
             return True
         else:
             print("Erreur dans la fusion : certains mots manquent ou sont en trop.")
-            print("Mots attendus :", expected_words)
-            print("Mots trouvés :", set(words_after_merge))
-            return False
-
-
-    def display(self, node=None, prefix=""):
-
-        if node is None:
-            node = self.root  # Si aucun nœud n'est fourni, commence à la racine
-
-        for label, child in node.labels.items():
-            # Affiche le label courant
             
 
-            # Si l'enfant n'est pas None, continue à afficher récursivement
-            if child:
-                self.display(child, prefix + label)
-            else:
-                print(f"{prefix}{label}")
-                
+            # Calculer et afficher les mots manquants
+            missing_words = expected_words - set(words_after_merge)
+            extra_words = set(words_after_merge) - expected_words
 
+            if missing_words:
+                print("Mots manquants :", missing_words)
+            if extra_words:
+                print("Mots en trop :", extra_words)
+
+            return False
 

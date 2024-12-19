@@ -31,6 +31,7 @@ def delete_words(file_name):
         trie.save_to_json("pat.json")
         print("Arbre sauvegardé dans 'pat.json'.")
         print(f"Temps total pour supprimer les mots : {duration:.2f} secondes.")
+        print(f"Nombre de comparaison {trie.comparaisons}")
     except FileNotFoundError:
         print("Erreur : Le fichier 'pat.json' est introuvable.")
     except Exception as e:

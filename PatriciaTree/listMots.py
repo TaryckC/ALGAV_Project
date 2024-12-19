@@ -1,4 +1,3 @@
-import json
 from .patricia import PatriciaTrie
 import time 
 def list_Mots(filename):
@@ -19,3 +18,4 @@ def list_Mots(filename):
 
     print(f"Les mots ont été sauvegardés dans mots.txt.")
     print(f"Temps total pour lister les mots : {duration:.6f} secondes.")
+    print(f"Nombre de visite de noeuds {trie.comparaisons}")

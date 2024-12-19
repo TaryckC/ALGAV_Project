@@ -34,6 +34,7 @@ def insert_words(source):
     trie.save_to_json("pat.json")
     print(f"Mots insérés depuis {source} et sauvegardés dans pat.json.")
     print(f"Temps total pour insérer les mots : {duration:.2f} secondes.")
+    print(f"Nombre de comparaison {trie.comparaisons}")
 
 
 def _insert_from_file(trie, file_name):

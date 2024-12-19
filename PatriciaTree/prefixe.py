@@ -1,4 +1,3 @@
-import json
 from .patricia import PatriciaTrie
 import time 
 
@@ -18,6 +17,6 @@ def prefixe_mot(filename,prefixe):
     with open("prefixe.txt", "w", encoding="utf-8") as f:
             f.write(f"{nb}")  
 
-    #print(f"Les résultats ont été sauvegardés dans prefixe.txt.")
-    #print(f"Temps total pour lister les mots : {duration:.6f} secondes.")
-    print(end_time - start_time)
+    print(f"Les résultats ont été sauvegardés dans prefixe.txt.")
+    print(f"Temps total pour lister les mots : {duration:.6f} secondes.")
+    print(f"Nombre de visite {trie.comparaisons}")
